@@ -357,6 +357,41 @@ public class ResourceProviderTrackerTest {
         assertThat( dto.providers, arrayWithSize(2));
         assertThat( dto.failedProviders, arrayWithSize(1));
     }
+    
+    
+    @Test
+    public void testPerformance() throws InvalidSyntaxException {
+        final ResourceProviderTracker tracker = new ResourceProviderTracker();
+
+        tracker.activate(context.bundleContext(), eventAdmin, null);
+        tracker.setObservationReporterGenerator(new SimpleObservationReporterGenerator(new DoNothingObservationReporter()));
+
+        ResourceProvider<?> rootRp = mock(ResourceProvider.class);
+        ResourceProvider<?> fooRp = mock(ResourceProvider.class);
+        ResourceProvider<?> barRp = mock(ResourceProvider.class);
+        ResourceProvider<?> foobarRp = mock(ResourceProvider.class);
+        ResourceProvider<?>[] myRp = new ResourceProvider<?>[1000];
+       
+       
+        for(int i =1;i<1000;i++)
+        {	
+        	myRp[i]  = mock(ResourceProvider.class);
+        }
+
+        long start = System.currentTimeMillis(); 
+        fixture.registerResourceProvider(foobarRp, "/foo/bar", AuthType.no);
+        fixture.registerResourceProvider(rootRp, "/", AuthType.no);
+        fixture.registerResourceProvider(fooRp, "/foo", AuthType.no);
+        fixture.registerResourceProvider(barRp, "/bar", AuthType.no);
+        
+        for(int i =1;i<1000;i++)
+        {
+            fixture.registerResourceProvider(myRp[i], "/foo/bar/myRp["+i+"]", AuthType.no);
+        }
+        long end = System.currentTimeMillis(); 
+        System.out.println("Time taken " + 
+                                    (end - start) + "ms"); 
+    }
 
     static class DoNothingObservationReporter implements ObservationReporter {
         @Override
